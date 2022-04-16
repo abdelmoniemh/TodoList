@@ -1,30 +1,44 @@
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Objects;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
-import javax.swing.text.Position;
+
 
 
 public class todoList extends Application implements EventHandler<ActionEvent> {
     ArrayList<todoItem> todoList;
     ArrayList<todoItem> doneList;
+    TilePane currentLayout;
+    TilePane nextLayout;
+
+    private static final int WIDTH = 200;
+    private static final int HEIGHT = 500;
+
 
     public todoList() {
         todoList = new ArrayList<todoItem>();
+        doneList = new ArrayList<todoItem>();
     }
 
     public void addItem(String description){
         todoItem item = new todoItem(description);
+        item.getCheckBox().setOnAction(checked -> {
+            updateLayout();
+            primaryStage.setScene(new Scene(this.nextLayout, WIDTH, HEIGHT));
+            currentLayout = nextLayout;
+            nextLayout = new TilePane();
+        });
         todoList.add(item);
+        updateLayout();
     }
 
     public void finishItem(todoItem item){
@@ -32,55 +46,47 @@ public class todoList extends Application implements EventHandler<ActionEvent> {
         doneList.add(item);
     }
 
-    public StackPane updateList(){
-        StackPane updatedLayout = new StackPane();
+    public void updateLayout(){
+        nextLayout = new TilePane();
+        nextLayout.getChildren().add(this.input);
+        nextLayout.setAlignment(Pos.TOP_CENTER);
+
         Iterator<todoItem> iter = todoList.iterator();
         while (iter.hasNext()){
             todoItem item = iter.next();
             if (item.getCheckBox().isSelected()){
-                System.out.println(item.getDescription());
                 this.finishItem(item);
                 iter.remove();
             } else {
-                updatedLayout.getChildren().add(item.getCheckBox());
+                nextLayout.getChildren().add(item.getCheckBox());
             }
         }
-        return updatedLayout;
     }
 
     Stage primaryStage;
     Scene scene;
+    TextField input = new TextField();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Todo List");
 
-        this.addItem("Shower");
-        this.addItem("Make Breakfast");
-        StackPane layout = new StackPane();
-        ArrayList<Pos> posArrayList = new ArrayList<Pos>();
-        posArrayList.add(Pos.BASELINE_CENTER);
-        posArrayList.add(Pos.BOTTOM_LEFT);
-        int i = 0;
+        currentLayout = new TilePane();
+        currentLayout.setAlignment(Pos.TOP_CENTER);
+        currentLayout.getChildren().add(this.input);
 
-        for (todoItem item : todoList ){
-            CheckBox checkBox = item.getCheckBox();
-            checkBox.setAlignment(posArrayList.get(i));
-            i++;
-            layout.getChildren().add(checkBox);
-            item.getCheckBox().setOnAction(event -> {
-                StackPane updatedLayout = updateList();
-                this.primaryStage.setScene(new Scene(updatedLayout, 400, 400));
-            });
-        }
+        input.setOnAction(event -> {
+            addItem(input.getText());
+            primaryStage.setScene(new Scene(this.nextLayout, WIDTH, HEIGHT));
+            currentLayout = nextLayout;
+            nextLayout = new TilePane();
+            nextLayout.setAlignment(Pos.TOP_CENTER);
+        });
 
-        this.scene = new Scene(layout, 400, 400);
+        this.scene = new Scene(currentLayout, WIDTH, HEIGHT);
         this.primaryStage.setScene(this.scene);
         this.primaryStage.show();
-
-
-
     }
     @Override
     public void handle(ActionEvent event) {

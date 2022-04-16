@@ -1,5 +1,6 @@
+import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
-public class todoItem {
+public class todoItem extends Node {
     private boolean done;
     private String description;
     private CheckBox checkBox;
@@ -32,4 +33,8 @@ public class todoItem {
         return checkBox;
     }
 
+    @Override
+    public Node getStyleableNode() {
+        return super.getStyleableNode();
+    }
 }
